@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Launcher Icon -->
+    <color name="ic_launcher_background">#10B981</color>
+
+    <!-- Primary Brand Colors -->
+    <color name="primary">#10B981</color>
+    <color name="primary_variant">#059669</color>
+    <color name="on_primary">#FFFFFF</color>
+
+    <!-- Secondary Colors -->
+    <color name="secondary">#3B82F6</color>
+    <color name="secondary_variant">#2563EB</color>
+    <color name="on_secondary">#FFFFFF</color>
+
+    <!-- Background Colors -->
+    <color name="background">#F9FAFB</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="on_background">#111827</color>
+    <color name="on_surface">#111827</color>
+
+    <!-- Semantic Colors -->
+    <color name="positive">#10B981</color>
+    <color name="negative">#EF4444</color>
+    <color name="warning">#F59E0B</color>
+    <color name="info">#3B82F6</color>
+
+    <!-- Category Colors -->
+    <color name="category_food">#F97316</color>
+    <color name="category_groceries">#22C55E</color>
+    <color name="category_transport">#3B82F6</color>
+    <color name="category_shopping">#EC4899</color>
+    <color name="category_utilities">#8B5CF6</color>
+    <color name="category_entertainment">#F43F5E</color>
+    <color name="category_health">#14B8A6</color>
+    <color name="category_transfers">#6366F1</color>
+    <color name="category_other">#6B7280</color>
+
+    <!-- Dark Theme -->
+    <color name="background_dark">#111827</color>
+    <color name="surface_dark">#1F2937</color>
+    <color name="on_background_dark">#F9FAFB</color>
+    <color name="on_surface_dark">#F9FAFB</color>
+</resources>

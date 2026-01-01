@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SpendWise</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_transactions">Transactions</string>
+    <string name="nav_reports">Reports</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Dashboard -->
+    <string name="total_spent">Total Spent</string>
+    <string name="this_month">This Month</string>
+    <string name="today">Today</string>
+    <string name="this_week">This Week</string>
+    <string name="budget_remaining">Budget Remaining</string>
+    <string name="recent_transactions">Recent Transactions</string>
+    <string name="view_all">View All</string>
+
+    <!-- Categories -->
+    <string name="category_food">Food &amp; Dining</string>
+    <string name="category_groceries">Groceries</string>
+    <string name="category_transport">Transport</string>
+    <string name="category_shopping">Shopping</string>
+    <string name="category_utilities">Utilities</string>
+    <string name="category_entertainment">Entertainment</string>
+    <string name="category_health">Health</string>
+    <string name="category_transfers">Transfers</string>
+    <string name="category_other">Other</string>
+
+    <!-- Reports -->
+    <string name="daily_report">Daily Report</string>
+    <string name="weekly_report">Weekly Report</string>
+    <string name="monthly_report">Monthly Report</string>
+    <string name="quarterly_report">Quarterly Report</string>
+    <string name="half_yearly_report">Half-Yearly Report</string>
+    <string name="annual_report">Annual Report</string>
+
+    <!-- Settings -->
+    <string name="notification_access">Notification Access</string>
+    <string name="notification_access_desc">Required to capture transaction notifications</string>
+    <string name="enable_notification_access">Enable Notification Access</string>
+    <string name="dashboard_server">Dashboard Server</string>
+    <string name="start_server">Start Server</string>
+    <string name="stop_server">Stop Server</string>
+    <string name="server_url">Server URL</string>
+    <string name="gemini_api_key">Gemini API Key</string>
+    <string name="save">Save</string>
+
+    <!-- Notifications -->
+    <string name="server_notification_title">Dashboard Server Running</string>
+    <string name="server_notification_text">Access dashboard at %1$s</string>
+    <string name="budget_warning_title">Budget Warning</string>
+    <string name="budget_exceeded_title">Budget Exceeded</string>
+</resources>
