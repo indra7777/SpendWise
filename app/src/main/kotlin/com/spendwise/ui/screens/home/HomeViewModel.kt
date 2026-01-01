@@ -2,17 +2,22 @@ package com.spendwise.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.spendwise.data.repository.TransactionRepository
 import com.spendwise.domain.model.Category
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    // TODO: Inject repositories
+    private val repository: TransactionRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -24,43 +29,124 @@ class HomeViewModel @Inject constructor(
 
     private fun loadDashboardData() {
         viewModelScope.launch {
-            // TODO: Load real data from repository
-            // For now, using placeholder data
-            _uiState.value = HomeUiState(
-                totalSpentThisMonth = 24500.0,
-                changeFromLastMonth = 12f,
-                todaySpent = 450.0,
-                weekSpent = 3200.0,
-                monthlyBudget = 40000.0,
-                budgetPercentUsed = 61.25f,
-                categoryBreakdown = listOf(
-                    CategoryData(Category.FOOD, 8200.0, 33.5f),
-                    CategoryData(Category.SHOPPING, 5100.0, 20.8f),
-                    CategoryData(Category.TRANSPORT, 3400.0, 13.9f),
-                    CategoryData(Category.ENTERTAINMENT, 2800.0, 11.4f),
-                    CategoryData(Category.UTILITIES, 2500.0, 10.2f),
-                    CategoryData(Category.OTHER, 2500.0, 10.2f)
-                ),
-                recentTransactions = listOf(
-                    RecentTransaction("Swiggy", Category.FOOD, 250.0, "Today, 2:30 PM"),
-                    RecentTransaction("Amazon", Category.SHOPPING, 1299.0, "Today, 11:45 AM"),
-                    RecentTransaction("Uber", Category.TRANSPORT, 180.0, "Yesterday"),
-                    RecentTransaction("Netflix", Category.ENTERTAINMENT, 649.0, "Dec 28"),
-                    RecentTransaction("Big Bazaar", Category.GROCERIES, 2340.0, "Dec 27")
-                ),
-                insights = listOf(
+            _uiState.value = _uiState.value.copy(isLoading = true)
+
+            try {
+                val now = System.currentTimeMillis()
+                val startOfToday = TransactionRepository.getStartOfToday()
+                val endOfToday = TransactionRepository.getEndOfToday()
+                val startOfWeek = TransactionRepository.getStartOfWeek()
+                val startOfMonth = TransactionRepository.getStartOfMonth()
+                val startOfLastMonth = TransactionRepository.getStartOfLastMonth()
+                val endOfLastMonth = TransactionRepository.getEndOfLastMonth()
+
+                // Get spending data
+                val totalThisMonth = repository.getTotalSpent(startOfMonth, now)
+                val totalLastMonth = repository.getTotalSpent(startOfLastMonth, endOfLastMonth)
+                val todaySpent = repository.getTotalSpent(startOfToday, endOfToday)
+                val weekSpent = repository.getTotalSpent(startOfWeek, now)
+
+                // Calculate change percentage
+                val changePercent = if (totalLastMonth > 0) {
+                    ((totalThisMonth - totalLastMonth) / totalLastMonth * 100).toFloat()
+                } else {
+                    0f
+                }
+
+                // Get budget
+                val monthlyBudget = repository.getMonthlyBudget()
+                val budgetPercent = if (monthlyBudget > 0) {
+                    (totalThisMonth / monthlyBudget * 100).toFloat()
+                } else {
+                    0f
+                }
+
+                // Get category breakdown
+                val categorySummary = repository.getCategorySummary(startOfMonth, now).first()
+                val totalForCategories = categorySummary.sumOf { it.total }
+                val categoryBreakdown = categorySummary.mapNotNull { result ->
+                    try {
+                        val category = Category.valueOf(result.category)
+                        val percentage = if (totalForCategories > 0) {
+                            (result.total / totalForCategories * 100).toFloat()
+                        } else 0f
+                        CategoryData(category, result.total, percentage)
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+
+                // Get recent transactions
+                val recentEntities = repository.getRecentTransactions(5)
+                val formatter = DateTimeFormatter.ofPattern("MMM d, h:mm a")
+                    .withZone(ZoneId.systemDefault())
+                val recentTransactions = recentEntities.mapNotNull { entity ->
+                    try {
+                        val category = Category.valueOf(entity.category)
+                        val formattedTime = formatRelativeTime(entity.timestamp)
+                        RecentTransaction(
+                            merchantName = entity.merchantName,
+                            category = category,
+                            amount = entity.amount,
+                            formattedTime = formattedTime
+                        )
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+
+                // Get insights
+                val insightEntities = repository.getRecentInsights(2)
+                val insights = insightEntities.map { entity ->
                     Insight(
-                        title = "Food spending up 25%",
-                        description = "You've spent more on food this week compared to your average. Consider cooking at home more often.",
-                        type = "warning"
-                    ),
-                    Insight(
-                        title = "Great job on transport!",
-                        description = "Your transport spending is 15% lower than last month. Keep it up!",
-                        type = "achievement"
+                        title = entity.title,
+                        description = entity.description,
+                        type = entity.type
                     )
+                }
+
+                _uiState.value = HomeUiState(
+                    isLoading = false,
+                    totalSpentThisMonth = totalThisMonth,
+                    changeFromLastMonth = changePercent,
+                    todaySpent = todaySpent,
+                    weekSpent = weekSpent,
+                    monthlyBudget = monthlyBudget,
+                    budgetPercentUsed = budgetPercent,
+                    categoryBreakdown = categoryBreakdown,
+                    recentTransactions = recentTransactions,
+                    insights = insights,
+                    hasData = recentEntities.isNotEmpty()
                 )
-            )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = e.message
+                )
+            }
+        }
+    }
+
+    private fun formatRelativeTime(timestamp: Long): String {
+        val now = System.currentTimeMillis()
+        val diff = now - timestamp
+        val seconds = diff / 1000
+        val minutes = seconds / 60
+        val hours = minutes / 60
+        val days = hours / 24
+
+        return when {
+            days > 7 -> {
+                val formatter = DateTimeFormatter.ofPattern("MMM d")
+                    .withZone(ZoneId.systemDefault())
+                formatter.format(Instant.ofEpochMilli(timestamp))
+            }
+            days > 1 -> "${days.toInt()} days ago"
+            days == 1L -> "Yesterday"
+            hours > 1 -> "${hours.toInt()} hours ago"
+            hours == 1L -> "1 hour ago"
+            minutes > 1 -> "${minutes.toInt()} mins ago"
+            else -> "Just now"
         }
     }
 
@@ -80,7 +166,8 @@ data class HomeUiState(
     val categoryBreakdown: List<CategoryData> = emptyList(),
     val recentTransactions: List<RecentTransaction> = emptyList(),
     val insights: List<Insight> = emptyList(),
-    val error: String? = null
+    val error: String? = null,
+    val hasData: Boolean = false
 )
 
 data class CategoryData(
