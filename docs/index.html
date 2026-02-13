@@ -452,7 +452,7 @@
                 <li><a href="#privacy">Privacy</a></li>
                 <li><a href="privacy.html">Privacy Policy</a></li>
             </ul>
-            <a href="https://github.com/indra7777/SpendWise/releases/latest/download/app-release.apk" class="nav-cta">Download APK</a>
+            <a href="https://github.com/indra7777/SpendWise/releases/latest/download/app-release.apk" class="nav-cta" download="SpendWise.apk">Download APK</a>
         </div>
     </nav>
 
@@ -462,7 +462,7 @@
         <h1>Track every rupee.<br><span>Automatically.</span></h1>
         <p>SpendWise captures your UPI payments from PhonePe, GPay, Paytm & more, and categorizes them using on-device AI. Zero manual entry. 100% private.</p>
         <div class="hero-buttons">
-            <a href="https://github.com/indra7777/SpendWise/releases/latest/download/app-release.apk" class="btn-primary">
+            <a href="https://github.com/indra7777/SpendWise/releases/latest/download/app-release.apk" class="btn-primary" download="SpendWise.apk">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Download APK
             </a>
@@ -613,7 +613,7 @@
         <h2>Ready to take control of your money?</h2>
         <p>Free. Private. No sign-up required.</p>
         <div class="hero-buttons">
-            <a href="https://github.com/indra7777/SpendWise/releases/latest/download/app-release.apk" class="btn-primary">
+            <a href="https://github.com/indra7777/SpendWise/releases/latest/download/app-release.apk" class="btn-primary" download="SpendWise.apk">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Download SpendWise
             </a>
@@ -637,5 +637,13 @@
             </ul>
         </div>
     </footer>
+<script>
+document.querySelectorAll('a[download]').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = this.href;
+    });
+});
+</script>
 </body>
 </html>
