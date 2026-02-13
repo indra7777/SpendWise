@@ -20,7 +20,7 @@ export default function SettingsPage() {
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
             <div>
               <p className="font-medium text-green-800">Connected</p>
-              <p className="text-sm text-green-600">Receiving data from SpendWise app</p>
+              <p className="text-sm text-green-600">Receiving data from RupeeLog app</p>
             </div>
           </div>
           <Wifi className="text-green-500" size={24} />
@@ -145,7 +145,7 @@ export default function SettingsPage() {
 
       {/* About */}
       <div className="card text-center">
-        <p className="text-gray-600">SpendWise Dashboard</p>
+        <p className="text-gray-600">RupeeLog Dashboard</p>
         <p className="text-sm text-gray-400">Version 1.0.0</p>
       </div>
     </div>

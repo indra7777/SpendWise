@@ -18,11 +18,11 @@ val secrets = Properties().apply {
 }
 
 android {
-    namespace = "com.spendwise"
+    namespace = "com.rupeelog"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.spendwise"
+        applicationId = "com.rupeelog"
         minSdk = 26
         targetSdk = 34
         versionCode = 2

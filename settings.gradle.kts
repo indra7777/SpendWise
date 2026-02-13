@@ -15,5 +15,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SpendWise"
+rootProject.name = "RupeeLog"
 include(":app")

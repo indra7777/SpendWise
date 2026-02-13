@@ -6,7 +6,7 @@
     android:viewportHeight="108">
     <!-- Background circle for safe zone -->
     <group android:translateX="22" android:translateY="22">
-        <!-- S letter for SpendWise -->
+        <!-- S letter for RupeeLog -->
         <path
             android:fillColor="#FFFFFF"
             android:pathData="M32,10 C18.7,10 8,20.7 8,34 C8,47.3 18.7,58 32,58 C45.3,58 56,47.3 56,34 C56,20.7 45.3,10 32,10 Z M38,45 L26,45 C23.2,45 21,42.8 21,40 L21,38 L27,38 L27,39 C27,39.6 27.4,40 28,40 L36,40 C36.6,40 37,39.6 37,39 L37,36 C37,35.4 36.6,35 36,35 L28,35 C24.1,35 21,31.9 21,28 C21,24.1 24.1,21 28,21 L36,21 C39.9,21 43,24.1 43,28 L43,30 L37,30 L37,28 C37,27.4 36.6,27 36,27 L28,27 C27.4,27 27,27.4 27,28 L27,31 C27,31.6 27.4,32 28,32 L36,32 C39.9,32 43,35.1 43,39 L43,42 C43,43.7 41.7,45 40,45 L38,45 Z"/>

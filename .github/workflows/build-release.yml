@@ -51,13 +51,13 @@ jobs:
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: spendwise-release-apk
+          name: rupeelog-release-apk
           path: app/build/outputs/apk/release/app-release.apk
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4
         with:
-          name: spendwise-release-aab
+          name: rupeelog-release-aab
           path: app/build/outputs/bundle/release/app-release.aab
 
       - name: Create GitHub Release
@@ -67,7 +67,7 @@ jobs:
           files: |
             app/build/outputs/apk/release/app-release.apk
           body: |
-            ## SpendWise ${{ github.ref_name }}
+            ## RupeeLog ${{ github.ref_name }}
 
             ### Download
             Download `app-release.apk` below and install on your Android device.

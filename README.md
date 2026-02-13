@@ -1,4 +1,4 @@
-# SpendWise
+# RupeeLog
 
 A privacy-first personal finance Android app that automatically tracks your UPI payments and categorizes expenses using AI.
 
@@ -30,8 +30,8 @@ Download the latest APK from the [Releases](../../releases) page.
 ### Build from Source
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/SpendWise.git
-cd SpendWise
+git clone https://github.com/YOUR_USERNAME/RupeeLog.git
+cd RupeeLog
 
 # Build debug APK (requires Java 17)
 ./gradlew assembleDebug
@@ -60,7 +60,7 @@ cd SpendWise
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    SpendWise Android App                     │
+│                    RupeeLog Android App                     │
 ├─────────────────────────────────────────────────────────────┤
 │  Notification Listener → Parser → Categorization Agent      │
 │                              ↓                               │

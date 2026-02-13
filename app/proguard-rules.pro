@@ -1,4 +1,4 @@
-# SpendWise ProGuard Rules
+# RupeeLog ProGuard Rules
 
 # Keep Kotlin metadata
 -keepattributes *Annotation*
@@ -78,9 +78,9 @@
 -dontwarn org.bouncycastle.**
 
 # Keep our domain models and data classes
--keep class com.spendwise.domain.model.** { *; }
--keep class com.spendwise.data.local.database.** { *; }
--keep class com.spendwise.data.remote.** { *; }
--keep class com.spendwise.server.*Dto { *; }
--keep class com.spendwise.server.*Response { *; }
--keep class com.spendwise.data.repository.ProfileDto { *; }
+-keep class com.rupeelog.domain.model.** { *; }
+-keep class com.rupeelog.data.local.database.** { *; }
+-keep class com.rupeelog.data.remote.** { *; }
+-keep class com.rupeelog.server.*Dto { *; }
+-keep class com.rupeelog.server.*Response { *; }
+-keep class com.rupeelog.data.repository.ProfileDto { *; }

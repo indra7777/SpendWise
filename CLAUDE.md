@@ -1,7 +1,7 @@
-# SpendWise - Claude Code Context
+# RupeeLog - Claude Code Context
 
 ## Project Overview
-SpendWise is a privacy-first personal finance Android app that automatically captures UPI payment notifications and categorizes expenses using AI.
+RupeeLog is a privacy-first personal finance Android app that automatically captures UPI payment notifications and categorizes expenses using AI.
 
 ## Tech Stack
 - **Android**: Kotlin, Jetpack Compose, Material 3
@@ -13,10 +13,10 @@ SpendWise is a privacy-first personal finance Android app that automatically cap
 
 ## Project Structure
 ```
-SpendWise/
-├── app/src/main/kotlin/com/spendwise/
+RupeeLog/
+├── app/src/main/kotlin/com/rupeelog/
 │   ├── MainActivity.kt              # Main entry point with navigation
-│   ├── SpendWiseApp.kt              # Hilt Application class
+│   ├── RupeeLogApp.kt              # Hilt Application class
 │   ├── agents/                       # AI agents
 │   │   ├── core/                     # GeminiClient, LocalLLMClient
 │   │   ├── categorization/           # Transaction categorization

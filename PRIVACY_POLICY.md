@@ -1,9 +1,9 @@
-# Privacy Policy for SpendWise
+# Privacy Policy for RupeeLog
 
 **Effective Date:** January 19, 2026
 
 ## 1. Introduction
-SpendWise ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how our Android application collects, uses, and safeguards your information.
+RupeeLog ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how our Android application collects, uses, and safeguards your information.
 
 ## 2. Information We Collect
 
