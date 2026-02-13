@@ -24,12 +24,18 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
-        loadDashboardData()
+        // Observe changes to the transaction table to refresh dashboard automatically
+        viewModelScope.launch {
+            repository.getAllTransactions().collect {
+                loadDashboardData()
+            }
+        }
     }
 
     private fun loadDashboardData() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            // Don't show loading state on updates to avoid flickering
+            // _uiState.value = _uiState.value.copy(isLoading = true) 
 
             try {
                 val now = System.currentTimeMillis()
@@ -40,11 +46,12 @@ class HomeViewModel @Inject constructor(
                 val startOfLastMonth = TransactionRepository.getStartOfLastMonth()
                 val endOfLastMonth = TransactionRepository.getEndOfLastMonth()
 
-                // Get spending data
+                // Get spending data (expenses are negative, income is positive)
                 val totalThisMonth = repository.getTotalSpent(startOfMonth, now)
                 val totalLastMonth = repository.getTotalSpent(startOfLastMonth, endOfLastMonth)
                 val todaySpent = repository.getTotalSpent(startOfToday, endOfToday)
                 val weekSpent = repository.getTotalSpent(startOfWeek, now)
+                val totalIncomeThisMonth = repository.getTotalIncome(startOfMonth, now)
 
                 // Calculate change percentage
                 val changePercent = if (totalLastMonth > 0) {
@@ -105,9 +112,13 @@ class HomeViewModel @Inject constructor(
                     )
                 }
 
+                // Get pending reviews
+                val pendingReviews = repository.getPendingReviewCount()
+
                 _uiState.value = HomeUiState(
                     isLoading = false,
                     totalSpentThisMonth = totalThisMonth,
+                    totalIncomeThisMonth = totalIncomeThisMonth,
                     changeFromLastMonth = changePercent,
                     todaySpent = todaySpent,
                     weekSpent = weekSpent,
@@ -116,6 +127,7 @@ class HomeViewModel @Inject constructor(
                     categoryBreakdown = categoryBreakdown,
                     recentTransactions = recentTransactions,
                     insights = insights,
+                    pendingReviews = pendingReviews,
                     hasData = recentEntities.isNotEmpty()
                 )
             } catch (e: Exception) {
@@ -158,6 +170,7 @@ class HomeViewModel @Inject constructor(
 data class HomeUiState(
     val isLoading: Boolean = false,
     val totalSpentThisMonth: Double = 0.0,
+    val totalIncomeThisMonth: Double = 0.0,
     val changeFromLastMonth: Float = 0f,
     val todaySpent: Double = 0.0,
     val weekSpent: Double = 0.0,
@@ -166,6 +179,7 @@ data class HomeUiState(
     val categoryBreakdown: List<CategoryData> = emptyList(),
     val recentTransactions: List<RecentTransaction> = emptyList(),
     val insights: List<Insight> = emptyList(),
+    val pendingReviews: Int = 0,
     val error: String? = null,
     val hasData: Boolean = false
 )

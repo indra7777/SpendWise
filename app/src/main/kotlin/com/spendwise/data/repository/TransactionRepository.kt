@@ -26,6 +26,10 @@ class TransactionRepository @Inject constructor(
         return transactionDao.getTotalSpent(start, end) ?: 0.0
     }
 
+    suspend fun getTotalIncome(start: Long, end: Long): Double {
+        return transactionDao.getTotalIncome(start, end) ?: 0.0
+    }
+
     fun getCategorySummary(start: Long, end: Long): Flow<List<CategorySummaryResult>> {
         return transactionDao.getCategorySummary(start, end)
     }
@@ -46,6 +50,11 @@ class TransactionRepository @Inject constructor(
 
     suspend fun insert(transaction: TransactionEntity) {
         transactionDao.insert(transaction)
+    }
+
+    suspend fun getPendingReviewCount(): Int {
+        // Threshold matching ReviewTransactionsViewModel
+        return transactionDao.getLowConfidenceTransactions(0.85f).size
     }
 
     // Time range helpers

@@ -6,6 +6,9 @@ import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,17 +16,25 @@ import javax.inject.Singleton
 class UserPreferences @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    private val masterKey = MasterKey.Builder(context)
-        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .build()
+    private val securePrefs: SharedPreferences by lazy {
+        try {
+            val masterKey = MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
 
-    private val securePrefs: SharedPreferences = EncryptedSharedPreferences.create(
-        context,
-        "secure_prefs",
-        masterKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
+            EncryptedSharedPreferences.create(
+                context,
+                "secure_prefs",
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        } catch (e: Exception) {
+            // Fallback to regular prefs if encryption fails (corrupted key scenario)
+            android.util.Log.e("UserPreferences", "Failed to create encrypted prefs, using fallback", e)
+            context.getSharedPreferences("secure_prefs_fallback", Context.MODE_PRIVATE)
+        }
+    }
 
     private val prefs: SharedPreferences = context.getSharedPreferences(
         "user_prefs",
@@ -122,6 +133,40 @@ class UserPreferences @Inject constructor(
         return prefs.getBoolean(KEY_ONBOARDING_COMPLETED, false)
     }
 
+    // Roast Mode
+    fun setRoastModeEnabled(enabled: Boolean) {
+        prefs.edit { putBoolean(KEY_ROAST_MODE_ENABLED, enabled) }
+    }
+
+    fun isRoastModeEnabled(): Boolean {
+        return prefs.getBoolean(KEY_ROAST_MODE_ENABLED, true) // Default to true!
+    }
+
+    // Daily Reminders (9 AM and 9 PM notifications)
+    private val _dailyRemindersEnabled = MutableStateFlow(
+        prefs.getBoolean(KEY_DAILY_REMINDERS_ENABLED, true)
+    )
+    val dailyRemindersEnabled: Flow<Boolean> = _dailyRemindersEnabled.asStateFlow()
+
+    fun setDailyRemindersEnabled(enabled: Boolean) {
+        prefs.edit { putBoolean(KEY_DAILY_REMINDERS_ENABLED, enabled) }
+        _dailyRemindersEnabled.value = enabled
+    }
+
+    fun isDailyRemindersEnabled(): Boolean {
+        return prefs.getBoolean(KEY_DAILY_REMINDERS_ENABLED, true)
+    }
+
+    // Flow-based monthly budget for workers
+    private val _monthlyBudget = MutableStateFlow(
+        prefs.getFloat(KEY_MONTHLY_BUDGET, 40000f).toDouble()
+    )
+    val monthlyBudget: Flow<Double> = _monthlyBudget.asStateFlow()
+
+    fun updateMonthlyBudgetFlow() {
+        _monthlyBudget.value = getMonthlyBudget()
+    }
+
     // Server settings
     fun setServerPort(port: Int) {
         prefs.edit { putInt(KEY_SERVER_PORT, port) }
@@ -148,6 +193,8 @@ class UserPreferences @Inject constructor(
         private const val KEY_CURRENCY = "currency"
         private const val KEY_DARK_MODE = "dark_mode"
         private const val KEY_ONBOARDING_COMPLETED = "onboarding_completed"
+        private const val KEY_ROAST_MODE_ENABLED = "roast_mode_enabled"
         private const val KEY_SERVER_PORT = "server_port"
+        private const val KEY_DAILY_REMINDERS_ENABLED = "daily_reminders_enabled"
     }
 }

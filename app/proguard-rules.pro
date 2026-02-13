@@ -20,6 +20,16 @@
 -keepclassmembers class io.ktor.** { volatile <fields>; }
 -dontwarn io.ktor.**
 
+# Netty (used by Ktor server - optional desktop/server dependencies not available on Android)
+-dontwarn io.netty.**
+-dontwarn org.apache.log4j.**
+-dontwarn org.apache.logging.log4j.**
+-dontwarn org.eclipse.jetty.npn.**
+-dontwarn reactor.blockhound.**
+-dontwarn javax.lang.model.**
+-dontwarn com.google.auto.value.**
+-dontwarn autovalue.shaded.**
+
 # Kotlinx Serialization
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.AnnotationsKt
@@ -40,6 +50,37 @@
 # MPAndroidChart
 -keep class com.github.mikephil.charting.** { *; }
 
-# Keep our domain models
+# Supabase
+-keep class io.github.jan.supabase.** { *; }
+-dontwarn io.github.jan.supabase.**
+
+# Google Credentials Manager
+-keep class androidx.credentials.** { *; }
+-dontwarn androidx.credentials.**
+-keep class com.google.android.libraries.identity.** { *; }
+-dontwarn com.google.android.libraries.identity.**
+
+# Coil (Image Loading)
+-keep class coil.** { *; }
+-dontwarn coil.**
+
+# Lottie Animations
+-keep class com.airbnb.lottie.** { *; }
+-dontwarn com.airbnb.lottie.**
+
+# ML Kit GenAI (Gemini Nano)
+-keep class com.google.mlkit.genai.** { *; }
+-dontwarn com.google.mlkit.genai.**
+
+# PdfBox Android
+-keep class com.tom_roush.pdfbox.** { *; }
+-dontwarn com.tom_roush.pdfbox.**
+-dontwarn org.bouncycastle.**
+
+# Keep our domain models and data classes
 -keep class com.spendwise.domain.model.** { *; }
 -keep class com.spendwise.data.local.database.** { *; }
+-keep class com.spendwise.data.remote.** { *; }
+-keep class com.spendwise.server.*Dto { *; }
+-keep class com.spendwise.server.*Response { *; }
+-keep class com.spendwise.data.repository.ProfileDto { *; }

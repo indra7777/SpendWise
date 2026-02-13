@@ -6,6 +6,7 @@ import android.util.Log
 import com.spendwise.data.local.database.TransactionDao
 import com.spendwise.data.local.database.BudgetDao
 import com.spendwise.data.local.database.InsightDao
+import com.spendwise.data.local.preferences.EncryptedPreferences
 import com.spendwise.agents.reporting.ReportingAgent
 import com.spendwise.domain.model.*
 import java.math.RoundingMode
@@ -20,6 +21,7 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.request.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -34,15 +36,23 @@ import java.time.temporal.TemporalAdjusters
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * MCP Security Compliance:
+ * - Token-based authentication for all API endpoints
+ * - Least privilege: Only GET endpoints exposed (read-only)
+ * - No DELETE/MODIFY operations via API (require in-app biometric verification)
+ */
 @Singleton
 class DashboardServer @Inject constructor(
     private val transactionDao: TransactionDao,
     private val budgetDao: BudgetDao,
     private val insightDao: InsightDao,
-    private val reportingAgent: ReportingAgent
+    private val reportingAgent: ReportingAgent,
+    private val encryptedPreferences: EncryptedPreferences
 ) {
     private var server: ApplicationEngine? = null
     private var isRunning = false
+    private var serverToken: String? = null
 
     val port = 8080
 
@@ -53,6 +63,10 @@ class DashboardServer @Inject constructor(
         }
 
         return try {
+            // MCP Security: Generate or retrieve authentication token
+            serverToken = encryptedPreferences.getMcpServerToken()
+                ?: encryptedPreferences.generateMcpServerToken()
+
             server = embeddedServer(Netty, port = port, host = "0.0.0.0") {
                 configureServer()
             }.start(wait = false)
@@ -60,12 +74,19 @@ class DashboardServer @Inject constructor(
             isRunning = true
             val url = getServerUrl()
             Log.d(TAG, "Server started at $url")
+            Log.d(TAG, "MCP Token: $serverToken") // Display token for authorized clients
             url
         } catch (e: Exception) {
             Log.e(TAG, "Failed to start server", e)
             null
         }
     }
+
+    /**
+     * Get the current server authentication token.
+     * This should be displayed to the user so they can authorize LLM clients.
+     */
+    fun getServerToken(): String? = serverToken
 
     fun stop() {
         server?.stop(1000, 2000)
@@ -81,6 +102,18 @@ class DashboardServer @Inject constructor(
         return if (ip != null) "http://$ip:$port" else null
     }
 
+    /**
+     * MCP Security: Validate Bearer token from Authorization header
+     */
+    private fun ApplicationCall.validateToken(): Boolean {
+        val authHeader = request.header(HttpHeaders.Authorization)
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return false
+        }
+        val token = authHeader.removePrefix("Bearer ")
+        return token == serverToken
+    }
+
     private fun Application.configureServer() {
         install(ContentNegotiation) {
             json(Json {
@@ -94,10 +127,9 @@ class DashboardServer @Inject constructor(
             anyHost()
             allowHeader(HttpHeaders.ContentType)
             allowHeader(HttpHeaders.Authorization)
+            // MCP Security: Only allow GET methods (read-only access)
+            // DELETE/MODIFY operations require in-app biometric verification
             allowMethod(HttpMethod.Get)
-            allowMethod(HttpMethod.Post)
-            allowMethod(HttpMethod.Put)
-            allowMethod(HttpMethod.Delete)
             allowMethod(HttpMethod.Options)
         }
 
@@ -112,12 +144,15 @@ class DashboardServer @Inject constructor(
         }
 
         routing {
-            // Health check
+            // Public endpoints (no auth required)
             get("/") {
                 call.respond(ApiResponse(
                     success = true,
-                    message = "SpendWise Dashboard API",
-                    data = mapOf("version" to "1.0.0")
+                    message = "SpendWise Dashboard API - MCP Secured",
+                    data = mapOf(
+                        "version" to "1.1.0",
+                        "security" to "Token authentication required for /api/* endpoints"
+                    )
                 ))
             }
 
@@ -125,8 +160,13 @@ class DashboardServer @Inject constructor(
                 call.respond(mapOf("status" to "ok", "timestamp" to System.currentTimeMillis()))
             }
 
-            // Dashboard summary
+            // Protected API endpoints - require Bearer token
+            // MCP Security: Token authentication for all data endpoints
             get("/api/dashboard") {
+                if (!call.validateToken()) {
+                    call.respond(HttpStatusCode.Unauthorized, ApiError("Invalid or missing authentication token"))
+                    return@get
+                }
                 val summary = getDashboardSummary()
                 call.respond(ApiResponse(success = true, data = summary))
             }

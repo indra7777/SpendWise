@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - SpendWise</title>
+    <meta name="description" content="SpendWise Privacy Policy - DPDP Act 2023 Compliant. Your data stays on your device.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #F9FAFB;
+            color: #111827;
+            line-height: 1.7;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #E5E7EB;
+            z-index: 100;
+            padding: 0 24px;
+        }
+        .nav-inner {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            height: 64px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #111827;
+        }
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: #10B981;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 18px;
+        }
+        .logo-text { font-weight: 700; font-size: 20px; }
+
+        .content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 100px 24px 80px;
+        }
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .effective-date {
+            color: #6B7280;
+            font-size: 14px;
+            margin-bottom: 40px;
+        }
+        h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 40px;
+            margin-bottom: 12px;
+            color: #111827;
+        }
+        h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 24px;
+            margin-bottom: 8px;
+        }
+        p, li {
+            color: #374151;
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+        ul {
+            padding-left: 24px;
+            margin-bottom: 16px;
+        }
+        li { margin-bottom: 6px; }
+        strong { color: #111827; }
+        a { color: #10B981; }
+        .highlight {
+            background: #D1FAE5;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border-left: 4px solid #10B981;
+            margin: 24px 0;
+        }
+        .highlight p { color: #065F46; margin-bottom: 0; }
+        footer {
+            border-top: 1px solid #E5E7EB;
+            padding: 24px;
+            text-align: center;
+            font-size: 13px;
+            color: #6B7280;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-inner">
+            <a href="/" class="logo">
+                <div class="logo-icon">S</div>
+                <span class="logo-text">SpendWise</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="content">
+        <h1>Privacy Policy</h1>
+        <p class="effective-date">Effective Date: January 19, 2026</p>
+
+        <div class="highlight">
+            <p><strong>TL;DR:</strong> Your financial data stays on your device. We don't upload, sell, or share it. AI categorization runs locally. DPDP Act 2023 compliant.</p>
+        </div>
+
+        <h2>1. Introduction</h2>
+        <p>SpendWise ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how our Android application collects, uses, and safeguards your information.</p>
+
+        <h2>2. Information We Collect</h2>
+
+        <h3>A. SMS and Notification Data</h3>
+        <p>We access your device's notifications solely for the purpose of:</p>
+        <ul>
+            <li>Detecting financial transactions (debits/credits)</li>
+            <li>Extracting transaction details (Amount, Merchant, Date)</li>
+            <li>Categorizing your expenses</li>
+        </ul>
+
+        <div class="highlight">
+            <p><strong>We DO NOT:</strong></p>
+        </div>
+        <ul>
+            <li>Read your personal SMS messages (OTP, personal chats)</li>
+            <li>Read notifications from non-financial apps (WhatsApp, Instagram, etc.)</li>
+            <li>Upload your raw notification content to any cloud server</li>
+        </ul>
+        <p><strong>All processing of notification text happens locally on your device.</strong></p>
+
+        <h3>B. User Account Data (Optional)</h3>
+        <p>If you choose to sign in with Google:</p>
+        <ul>
+            <li>We collect your Email Address and Name for authentication</li>
+            <li>This data is stored securely using Supabase (hosted on AWS)</li>
+        </ul>
+
+        <h3>C. Financial Data</h3>
+        <ul>
+            <li>Your transaction history is stored locally on your device in an encrypted database</li>
+            <li>If you enable "Cloud Backup" (future feature), encrypted backups may be stored on your Google Drive or our secure servers</li>
+        </ul>
+
+        <h2>3. How We Use Your Information</h2>
+        <ul>
+            <li><strong>Expense Tracking:</strong> To provide you with dashboards and insights</li>
+            <li><strong>AI Categorization:</strong> We use a local AI model (Gemma) to categorize transactions. No data leaves your device for this.</li>
+            <li><strong>Cloud AI (Optional):</strong> If you enable Gemini Cloud features, anonymized transaction text (merchant name) may be sent to Google's Gemini API for advanced insights. This is optional and disabled by default.</li>
+        </ul>
+
+        <h2>4. Data Sharing</h2>
+        <p>We do not sell, trade, or rent your personal data.</p>
+
+        <h2>5. Data Security</h2>
+        <ul>
+            <li>We use industry-standard encryption (SQLCipher) for your local database</li>
+            <li>Network communication uses SSL/TLS</li>
+        </ul>
+
+        <h2>6. Your Rights (DPDP Act 2023)</h2>
+        <ul>
+            <li><strong>Right to Access:</strong> You can view all your data within the app</li>
+            <li><strong>Right to Erasure:</strong> You can delete all your data permanently via Settings &gt; Privacy &gt; Delete My Data</li>
+            <li><strong>Right to Grievance Redressal:</strong> Contact our Grievance Officer at <a href="mailto:indraprakashgottipati61@gmail.com">indraprakashgottipati61@gmail.com</a></li>
+        </ul>
+
+        <h2>7. Contact Us</h2>
+        <p>If you have questions, please contact us at:<br>
+        <a href="mailto:indraprakashgottipati61@gmail.com">indraprakashgottipati61@gmail.com</a></p>
+    </div>
+
+    <footer>
+        <a href="/" style="color: #6B7280; text-decoration: none;">&larr; Back to SpendWise</a> &middot; Made in India &middot; &copy; 2026
+    </footer>
+</body>
+</html>

@@ -4,14 +4,32 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
+import com.spendwise.notification.DailyReminderManager
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
 
 @HiltAndroidApp
-class SpendWiseApp : Application() {
+class SpendWiseApp : Application(), Configuration.Provider {
+
+    @Inject lateinit var workerFactory: HiltWorkerFactory
+    @Inject lateinit var dailyReminderManager: DailyReminderManager
+
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
 
     override fun onCreate() {
         super.onCreate()
         createNotificationChannels()
+        scheduleDailyReminders()
+    }
+
+    private fun scheduleDailyReminders() {
+        // Schedule daily reminders at 9 AM and 9 PM
+        dailyReminderManager.scheduleDailyReminders()
     }
 
     private fun createNotificationChannels() {

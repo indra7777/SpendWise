@@ -23,6 +23,9 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions ORDER BY timestamp DESC")
     fun getAllTransactions(): Flow<List<TransactionEntity>>
 
+    @Query("SELECT * FROM transactions ORDER BY timestamp DESC")
+    suspend fun getAllTransactionsSync(): List<TransactionEntity>
+
     @Query("SELECT * FROM transactions ORDER BY timestamp DESC LIMIT :limit OFFSET :offset")
     suspend fun getTransactionsPaged(limit: Int, offset: Int): List<TransactionEntity>
 
@@ -44,8 +47,14 @@ interface TransactionDao {
     """)
     fun getCategorySummary(startTime: Long, endTime: Long): Flow<List<CategorySummaryResult>>
 
-    @Query("SELECT SUM(amount) FROM transactions WHERE timestamp BETWEEN :startTime AND :endTime")
+    @Query("SELECT SUM(amount) FROM transactions WHERE timestamp BETWEEN :startTime AND :endTime AND amount < 0")
     suspend fun getTotalSpent(startTime: Long, endTime: Long): Double?
+
+    @Query("SELECT SUM(amount) FROM transactions WHERE timestamp BETWEEN :startTime AND :endTime AND amount > 0")
+    suspend fun getTotalIncome(startTime: Long, endTime: Long): Double?
+
+    @Query("SELECT COALESCE(SUM(amount), 0.0) FROM transactions WHERE timestamp BETWEEN :startTime AND :endTime AND amount < 0")
+    fun getTotalSpendingBetweenSync(startTime: Long, endTime: Long): Double
 
     @Query("SELECT COUNT(*) FROM transactions WHERE timestamp BETWEEN :startTime AND :endTime")
     suspend fun getTransactionCount(startTime: Long, endTime: Long): Int

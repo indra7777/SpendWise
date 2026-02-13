@@ -7,6 +7,9 @@ import android.util.Log
 import com.spendwise.data.local.database.TransactionDao
 import com.spendwise.data.local.database.TransactionEntity
 import com.spendwise.agents.categorization.CategorizationAgent
+import com.spendwise.agents.deduplication.TransactionDeduplicationEngine
+import com.spendwise.parser.core.ParserRegistry
+import com.spendwise.parser.core.TransactionType
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,13 +22,16 @@ import javax.inject.Inject
 class TransactionNotificationListener : NotificationListenerService() {
 
     @Inject
-    lateinit var notificationParser: NotificationParser
+    lateinit var parserRegistry: ParserRegistry
 
     @Inject
     lateinit var transactionDao: TransactionDao
 
     @Inject
     lateinit var categorizationAgent: CategorizationAgent
+
+    @Inject
+    lateinit var deduplicationEngine: TransactionDeduplicationEngine
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -41,6 +47,17 @@ class TransactionNotificationListener : NotificationListenerService() {
         "com.mobikwik_new",                   // Mobikwik
     )
 
+    // SMS/Messaging apps package names
+    private val smsApps = setOf(
+        "com.google.android.apps.messaging", // Google Messages
+        "com.android.mms",                   // Stock Android SMS
+        "com.samsung.android.messaging",     // Samsung Messages
+        "com.miui.securitycenter",           // MIUI Security (shows SMS)
+        "com.xiaomi.mipicks",                // Xiaomi
+        "com.mi.android.globalminusscreen",  // POCO/Xiaomi
+        "com.android.messaging",             // AOSP Messaging
+    )
+
     // Bank apps package names
     private val bankApps = setOf(
         "com.sbi.SBIFreedomPlus",             // SBI YONO
@@ -49,6 +66,15 @@ class TransactionNotificationListener : NotificationListenerService() {
         "com.axis.mobile",                    // Axis Mobile
         "com.hdfc.mobilebanking",             // HDFC MobileBanking
         "com.kotak.mobile.banking",           // Kotak Mobile Banking
+        "com.airtel.money",                   // Airtel Payments Bank
+    )
+
+    // DPDP Compliance: Financial keywords that MUST be present to process a notification
+    // This ensures we only capture transaction-related data, not personal messages
+    private val financialKeywords = setOf(
+        "debited", "credited", "paid", "received", "sent", "withdrawn",
+        "transferred", "payment", "transaction", "spent", "purchase",
+        "₹", "rs.", "rs ", "inr", "upi"
     )
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
@@ -61,7 +87,7 @@ class TransactionNotificationListener : NotificationListenerService() {
         val extras = notification.extras
 
         // Extract notification text
-        val title = extras.getString(Notification.EXTRA_TITLE) ?: ""
+        val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString() ?: ""
         val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString() ?: ""
         val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString() ?: ""
 
@@ -69,7 +95,15 @@ class TransactionNotificationListener : NotificationListenerService() {
             .filter { it.isNotBlank() }
             .joinToString(" | ")
 
-        Log.d(TAG, "Financial notification from $packageName: $fullText")
+        // DPDP Compliance: Early keyword filtering - IMMEDIATELY drop non-financial notifications
+        // This ensures we never process or store personal messages/chats
+        if (!containsFinancialKeyword(fullText)) {
+            // Non-financial notification - drop immediately without storing anything
+            return
+        }
+
+        // Only log minimal info for debugging (no raw text in production)
+        Log.d(TAG, "Processing financial notification from $packageName")
 
         // Process in background
         serviceScope.launch {
@@ -77,46 +111,70 @@ class TransactionNotificationListener : NotificationListenerService() {
         }
     }
 
+    /**
+     * DPDP Compliance: Check if notification contains financial keywords
+     * This is the first line of defense - notifications without these keywords
+     * are never processed or stored.
+     */
+    private fun containsFinancialKeyword(text: String): Boolean {
+        val lowerText = text.lowercase()
+        return financialKeywords.any { keyword -> lowerText.contains(keyword) }
+    }
+
     private suspend fun processNotification(packageName: String, notificationText: String) {
         try {
-            // Parse the notification
-            val parsedTransaction = notificationParser.parse(notificationText, packageName)
+            // Extract sender ID from notification (for SMS) or use package name
+            val sender = extractSenderFromPackage(packageName)
 
-            if (!parsedTransaction.isValidTransaction) {
+            // Parse the notification using the new modular parser
+            val parsedTransaction = parserRegistry.parse(
+                body = notificationText,
+                sender = sender,
+                timestamp = System.currentTimeMillis()
+            )
+
+            if (parsedTransaction == null) {
                 Log.d(TAG, "Not a valid transaction notification")
                 return
             }
 
-            Log.d(TAG, "Parsed transaction: $parsedTransaction")
+            // DPDP: Log only essential info, no raw text
+            Log.d(TAG, "Valid transaction detected: ${parsedTransaction.type} from ${parsedTransaction.bankName}")
 
             // Create transaction entity
-            val transactionId = UUID.randomUUID().toString()
+            val transactionId = parsedTransaction.transactionHash // Use hash for deduplication
 
             // Categorize the transaction
             val categoryResult = categorizationAgent.categorize(
-                merchantText = parsedTransaction.merchantName ?: notificationText,
-                amount = parsedTransaction.amount
+                merchantText = parsedTransaction.merchant ?: "Unknown",
+                amount = parsedTransaction.amount.toDouble()
             )
 
+            // Get signed amount based on transaction type
+            val signedAmount = parsedTransaction.getSignedAmount().toDouble()
+
+            // DPDP Compliance: Only store extracted transaction data, NOT raw notification text
+            // This implements Purpose Limitation - we only keep what's necessary
             val transaction = TransactionEntity(
                 id = transactionId,
-                amount = parsedTransaction.amount ?: 0.0,
-                currency = parsedTransaction.currency ?: "INR",
-                merchantName = categoryResult.merchantName ?: parsedTransaction.merchantName ?: "Unknown",
-                merchantRaw = parsedTransaction.merchantRaw ?: notificationText,
+                amount = signedAmount,
+                currency = parsedTransaction.currency,
+                merchantName = categoryResult.merchantName ?: parsedTransaction.merchant ?: "Unknown",
+                merchantRaw = parsedTransaction.merchant ?: "Unknown", // Store cleaned merchant name only
                 category = categoryResult.category,
                 subcategory = categoryResult.subcategory,
-                timestamp = parsedTransaction.timestamp ?: System.currentTimeMillis(),
-                source = "NOTIFICATION",
+                timestamp = parsedTransaction.timestamp,
+                source = parsedTransaction.bankName, // Store bank/app name instead of package
                 categoryConfidence = categoryResult.confidence,
                 categorySource = categoryResult.source,
-                rawNotificationText = notificationText
+                rawNotificationText = null // DPDP: Never store raw notification text
             )
 
-            // Save to database
-            transactionDao.insert(transaction)
+            // Process through deduplication engine
+            deduplicationEngine.process(transaction)
 
-            Log.d(TAG, "Transaction saved: ${transaction.merchantName} - ${transaction.amount} - ${transaction.category}")
+            // DPDP: Minimal logging - no amounts or merchant details
+            Log.d(TAG, "Transaction sent to deduplication engine")
 
             // TODO: Check budget alerts
             // TODO: Trigger analysis if needed
@@ -126,8 +184,24 @@ class TransactionNotificationListener : NotificationListenerService() {
         }
     }
 
+    /**
+     * Maps package name to a sender ID for parser selection.
+     * For SMS apps, the actual sender ID will be extracted from the notification.
+     */
+    private fun extractSenderFromPackage(packageName: String): String {
+        return when {
+            packageName.contains("phonepe") -> "com.phonepe.app"
+            packageName.contains("amazon") -> "in.amazon.mShop.android.shopping"
+            packageName.contains("google.android.apps.nbu") -> "com.google.android.apps.nbu.paisa.user"
+            packageName.contains("paytm") || packageName.contains("one97") -> "net.one97.paytm"
+            packageName.contains("whatsapp") -> "com.whatsapp"
+            // For bank apps and SMS, use package name as sender
+            else -> packageName
+        }
+    }
+
     private fun isFinancialApp(packageName: String): Boolean {
-        return packageName in upiApps || packageName in bankApps
+        return packageName in upiApps || packageName in bankApps || packageName in smsApps
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification) {

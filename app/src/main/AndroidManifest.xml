@@ -11,6 +11,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- SMS Permission (for importing transaction history) -->
+    <uses-permission android:name="android.permission.READ_SMS" />
+
     <!-- Notification Listener Permission (special) -->
     <uses-permission android:name="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
         tools:ignore="ProtectedPermissions" />
@@ -68,7 +71,7 @@
             </intent-filter>
         </receiver>
 
-        <!-- WorkManager Initializer -->
+        <!-- Disable default WorkManager initializer (using custom Hilt init via Configuration.Provider) -->
         <provider
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
@@ -76,7 +79,8 @@
             tools:node="merge">
             <meta-data
                 android:name="androidx.work.WorkManagerInitializer"
-                android:value="androidx.startup" />
+                android:value="androidx.startup"
+                tools:node="remove" />
         </provider>
 
     </application>

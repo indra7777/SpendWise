@@ -21,7 +21,9 @@ SpendWise/
 │   │   ├── core/                     # GeminiClient, LocalLLMClient
 │   │   ├── categorization/           # Transaction categorization
 │   │   └── reporting/                # Report generation
-│   ├── data/local/                   # Room database, preferences
+│   ├── data/
+│   │   ├── importer/                 # Statement parsers (CSV, PDF)
+│   │   └── local/                    # Room database, preferences
 │   ├── di/                           # Hilt modules
 │   ├── domain/model/                 # Domain models
 │   ├── notification/                 # NotificationListenerService
@@ -36,6 +38,7 @@ SpendWise/
 3. **Privacy First**: Local-first with optional cloud features
 4. **REST API**: Embedded Ktor server on port 8765
 5. **Web Dashboard**: React dashboard for desktop viewing
+6. **PDF Statement Import**: Password-protected bank statement import (SBI, HDFC, ICICI, Axis, PhonePe)
 
 ## Build Commands
 ```bash
@@ -54,7 +57,10 @@ npm install && npm run dev
 
 ## Version History
 - **v1.0.0**: Initial release with core features
-- **v1.1.0** (planned): User onboarding flow
+- **v1.1.0**: PDF bank statement import with password support
+  - Supports: SBI (YONO, Email, Net Banking), HDFC, ICICI, Axis, PhonePe
+  - Auto-detects bank from filename and shows password format hints
+  - Uses PdfBox-Android for PDF parsing
 
 ## Important Notes
 - Requires Java 17 for building
