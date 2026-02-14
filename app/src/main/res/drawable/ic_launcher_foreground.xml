@@ -4,11 +4,27 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Background circle for safe zone -->
+    <!-- Rupee symbol (₹) for RupeeLog adaptive icon -->
     <group android:translateX="22" android:translateY="22">
-        <!-- S letter for RupeeLog -->
+        <!-- White circle -->
         <path
             android:fillColor="#FFFFFF"
-            android:pathData="M32,10 C18.7,10 8,20.7 8,34 C8,47.3 18.7,58 32,58 C45.3,58 56,47.3 56,34 C56,20.7 45.3,10 32,10 Z M38,45 L26,45 C23.2,45 21,42.8 21,40 L21,38 L27,38 L27,39 C27,39.6 27.4,40 28,40 L36,40 C36.6,40 37,39.6 37,39 L37,36 C37,35.4 36.6,35 36,35 L28,35 C24.1,35 21,31.9 21,28 C21,24.1 24.1,21 28,21 L36,21 C39.9,21 43,24.1 43,28 L43,30 L37,30 L37,28 C37,27.4 36.6,27 36,27 L28,27 C27.4,27 27,27.4 27,28 L27,31 C27,31.6 27.4,32 28,32 L36,32 C39.9,32 43,35.1 43,39 L43,42 C43,43.7 41.7,45 40,45 L38,45 Z"/>
+            android:pathData="M32,8 C18,8 6,20 6,34 C6,48 18,60 32,60 C46,60 58,48 58,34 C58,20 46,8 32,8 Z"/>
+        <!-- ₹ top horizontal bar -->
+        <path
+            android:fillColor="#059669"
+            android:pathData="M20,22 L44,22 L44,26 L20,26 Z"/>
+        <!-- ₹ second horizontal bar -->
+        <path
+            android:fillColor="#059669"
+            android:pathData="M20,30 L44,30 L44,34 L20,34 Z"/>
+        <!-- ₹ curved stroke (top of letter) -->
+        <path
+            android:fillColor="#059669"
+            android:pathData="M30,22 C36,22 40,25 40,30 C40,35 36,38 30,38 L26,38 L26,34 L30,34 C33.5,34 36,32.5 36,30 C36,27.5 33.5,26 30,26 L26,26 L26,22 Z"/>
+        <!-- ₹ diagonal leg -->
+        <path
+            android:fillColor="#059669"
+            android:pathData="M24,34 L29,34 L40,50 L35,50 Z"/>
     </group>
 </vector>
