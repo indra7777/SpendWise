@@ -2,9 +2,13 @@ package com.rupeelog.ui.screens.settings
 
 import android.Manifest
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -12,6 +16,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -24,15 +29,19 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.rupeelog.data.repository.AuthState
+import com.rupeelog.server.ServerState
 import com.rupeelog.ui.theme.FinanceColors
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedButton
+import java.text.NumberFormat
+import java.util.Locale
 
 @Composable
 fun SettingsScreen(
@@ -40,13 +49,15 @@ fun SettingsScreen(
     settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    var serverEnabled by remember { mutableStateOf(false) }
-    var serverUrl by remember { mutableStateOf("") }
     var geminiApiKey by remember { mutableStateOf("") }
+    var showBudgetDialog by remember { mutableStateOf(false) }
 
     val importState by importViewModel.uiState.collectAsState()
     val authState by settingsViewModel.authState.collectAsState()
     val exportState by settingsViewModel.exportState.collectAsState()
+    val serverState by settingsViewModel.serverState.collectAsState()
+    val monthlyBudget by settingsViewModel.monthlyBudget.collectAsState()
+    val localLLMEnabled by settingsViewModel.localLLMEnabled.collectAsState()
 
     // File picker launcher
     val filePickerLauncher = rememberLauncherForActivityResult(
@@ -156,6 +167,45 @@ fun SettingsScreen(
         ImportResultDialog(
             result = importState.result!!,
             onDismiss = { importViewModel.dismissResultDialog() }
+        )
+    }
+
+    // Budget Edit Dialog
+    if (showBudgetDialog) {
+        var budgetText by remember { mutableStateOf(monthlyBudget.toLong().toString()) }
+        AlertDialog(
+            onDismissRequest = { showBudgetDialog = false },
+            icon = { Icon(Icons.Default.AccountBalance, contentDescription = null) },
+            title = { Text("Set Monthly Budget") },
+            text = {
+                OutlinedTextField(
+                    value = budgetText,
+                    onValueChange = { newValue ->
+                        if (newValue.all { it.isDigit() }) budgetText = newValue
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Amount (₹)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    prefix = { Text("₹ ") }
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    val amount = budgetText.toDoubleOrNull()
+                    if (amount != null && amount > 0) {
+                        settingsViewModel.updateBudget(amount)
+                        showBudgetDialog = false
+                    }
+                }) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showBudgetDialog = false }) {
+                    Text("Cancel")
+                }
+            }
         )
     }
 
@@ -425,25 +475,22 @@ fun SettingsScreen(
                     SettingsItem(
                         icon = Icons.Default.Wifi,
                         title = "Local Server",
-                        description = if (serverEnabled) "Running at $serverUrl" else "Start server to view dashboard in browser",
+                        description = when {
+                            serverState.isStarting -> "Starting server..."
+                            serverState.isRunning && serverState.url != null -> "Running at ${serverState.url}"
+                            else -> "Start server to view dashboard in browser"
+                        },
                         trailing = {
                             Switch(
-                                checked = serverEnabled,
+                                checked = serverState.isRunning || serverState.isStarting,
                                 onCheckedChange = { enabled ->
-                                    serverEnabled = enabled
-                                    if (enabled) {
-                                        serverUrl = "http://192.168.1.100:8080"
-                                        // TODO: Start server
-                                    } else {
-                                        serverUrl = ""
-                                        // TODO: Stop server
-                                    }
+                                    settingsViewModel.toggleServer(enabled)
                                 }
                             )
                         }
                     )
 
-                    if (serverEnabled) {
+                    if (serverState.isRunning && serverState.url != null) {
                         Spacer(modifier = Modifier.height(8.dp))
                         Card(
                             modifier = Modifier.fillMaxWidth(),
@@ -470,16 +517,24 @@ fun SettingsScreen(
                                         fontWeight = FontWeight.Medium
                                     )
                                     Text(
-                                        text = serverUrl,
+                                        text = serverState.url ?: "",
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 }
                                 Spacer(modifier = Modifier.weight(1f))
-                                IconButton(onClick = { /* Copy URL */ }) {
-                                    Icon(Icons.Default.ContentCopy, contentDescription = "Copy")
+                                IconButton(onClick = {
+                                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                    val clip = ClipData.newPlainText("Server URL", serverState.url)
+                                    clipboard.setPrimaryClip(clip)
+                                    Toast.makeText(context, "URL copied", Toast.LENGTH_SHORT).show()
+                                }) {
+                                    Icon(Icons.Default.ContentCopy, contentDescription = "Copy URL")
                                 }
-                                IconButton(onClick = { /* Show QR */ }) {
-                                    Icon(Icons.Default.QrCode, contentDescription = "QR Code")
+                                IconButton(onClick = {
+                                    val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(serverState.url))
+                                    context.startActivity(intent)
+                                }) {
+                                    Icon(Icons.Default.OpenInBrowser, contentDescription = "Open in browser")
                                 }
                             }
                         }
@@ -495,11 +550,11 @@ fun SettingsScreen(
                     SettingsItem(
                         icon = Icons.Default.Psychology,
                         title = "Local AI (Gemma 3n)",
-                        description = "On-device categorization - Private & Offline",
+                        description = if (settingsViewModel.isLocalLLMAvailable) "On-device categorization - Private & Offline" else "Model not downloaded - using rule-based categorization",
                         trailing = {
                             Switch(
-                                checked = true,
-                                onCheckedChange = { }
+                                checked = localLLMEnabled,
+                                onCheckedChange = { settingsViewModel.toggleLocalLLM(it) }
                             )
                         }
                     )
@@ -535,9 +590,9 @@ fun SettingsScreen(
                 SettingsItem(
                     icon = Icons.Default.AccountBalance,
                     title = "Monthly Budget",
-                    description = "₹40,000",
+                    description = NumberFormat.getCurrencyInstance(Locale("en", "IN")).format(monthlyBudget),
                     trailing = {
-                        IconButton(onClick = { /* Edit budget */ }) {
+                        IconButton(onClick = { showBudgetDialog = true }) {
                             Icon(Icons.Default.Edit, contentDescription = "Edit")
                         }
                     }
@@ -688,6 +743,7 @@ fun SettingsScreen(
 fun PrivacyLegalSection(
     settingsViewModel: SettingsViewModel
 ) {
+    val context = LocalContext.current
     val deleteDataState by settingsViewModel.deleteDataState.collectAsState()
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
 
@@ -874,7 +930,10 @@ fun PrivacyLegalSection(
                 title = "Privacy Policy",
                 description = "How we handle your data",
                 trailing = {
-                    IconButton(onClick = { /* Open privacy policy URL */ }) {
+                    IconButton(onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://indra7777.github.io/SpendWise/privacy.html"))
+                        context.startActivity(intent)
+                    }) {
                         Icon(Icons.Default.OpenInNew, contentDescription = "Open")
                     }
                 }

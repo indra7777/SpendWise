@@ -160,7 +160,7 @@ fun ReportsScreen(
 
                 // AI Insights Section
                 item {
-                    AIInsightsCard()
+                    AIInsightsCard(onGenerate = { viewModel.loadReport() })
                 }
             }
         }
@@ -686,7 +686,7 @@ private fun AchievementsCard(achievements: List<Achievement>) {
 }
 
 @Composable
-private fun AIInsightsCard() {
+private fun AIInsightsCard(onGenerate: () -> Unit = {}) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -715,7 +715,7 @@ private fun AIInsightsCard() {
             )
             Spacer(modifier = Modifier.height(12.dp))
             Button(
-                onClick = { /* Generate insights */ },
+                onClick = onGenerate,
                 colors = ButtonDefaults.buttonColors(containerColor = FinanceColors.Info)
             ) {
                 Icon(Icons.Default.AutoAwesome, contentDescription = null)

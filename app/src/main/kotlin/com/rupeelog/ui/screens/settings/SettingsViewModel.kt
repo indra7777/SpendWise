@@ -12,6 +12,10 @@ import com.rupeelog.data.local.preferences.EncryptedPreferences
 import com.rupeelog.data.manager.BackupManager
 import com.rupeelog.data.repository.AuthRepository
 import com.rupeelog.data.repository.AuthState
+import com.rupeelog.agents.core.LocalLLMClient
+import com.rupeelog.data.local.preferences.UserPreferences
+import com.rupeelog.server.ServerManager
+import com.rupeelog.server.ServerState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,10 +33,26 @@ class SettingsViewModel @Inject constructor(
     private val categoryRuleDao: CategoryRuleDao,
     private val syncQueueDao: SyncQueueDao,
     private val encryptedPreferences: EncryptedPreferences,
-    private val backupManager: BackupManager
+    private val backupManager: BackupManager,
+    private val serverManager: ServerManager,
+    private val userPreferences: UserPreferences,
+    private val localLLMClient: LocalLLMClient
 ) : ViewModel() {
 
     val authState: StateFlow<AuthState> = authRepository.authState
+
+    // Server state
+    val serverState: StateFlow<ServerState> = serverManager.serverState
+
+    // Budget state
+    private val _monthlyBudget = MutableStateFlow(userPreferences.getMonthlyBudget())
+    val monthlyBudget: StateFlow<Double> = _monthlyBudget.asStateFlow()
+
+    // Local LLM state
+    private val _localLLMEnabled = MutableStateFlow(userPreferences.isLocalLLMEnabled())
+    val localLLMEnabled: StateFlow<Boolean> = _localLLMEnabled.asStateFlow()
+
+    val isLocalLLMAvailable: Boolean get() = localLLMClient.isModelAvailable()
 
     private val _deleteDataState = MutableStateFlow<DeleteDataState>(DeleteDataState.Idle)
     val deleteDataState: StateFlow<DeleteDataState> = _deleteDataState.asStateFlow()
@@ -66,6 +86,24 @@ class SettingsViewModel @Inject constructor(
 
     fun resetExportState() {
         _exportState.value = ExportState.Idle
+    }
+
+    fun toggleServer(enabled: Boolean) {
+        if (enabled) {
+            serverManager.startServer()
+        } else {
+            serverManager.stopServer()
+        }
+    }
+
+    fun updateBudget(amount: Double) {
+        userPreferences.setMonthlyBudget(amount)
+        _monthlyBudget.value = amount
+    }
+
+    fun toggleLocalLLM(enabled: Boolean) {
+        userPreferences.setLocalLLMEnabled(enabled)
+        _localLLMEnabled.value = enabled
     }
 
     /**

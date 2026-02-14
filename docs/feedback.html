@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RupeeLog - Download & Feedback</title>
+    <meta name="description" content="Download RupeeLog and share your feedback. Help us build the best UPI expense tracker for India.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #10B981;
+            --primary-dark: #059669;
+            --primary-light: #D1FAE5;
+            --secondary: #3B82F6;
+            --bg: #F9FAFB;
+            --text: #111827;
+            --text-secondary: #6B7280;
+            --surface: #FFFFFF;
+            --radius: 16px;
+            --star: #FBBF24;
+            --star-empty: #D1D5DB;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 540px;
+            margin: 0 auto;
+            padding: 24px 20px 60px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 24px 0 32px;
+        }
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text);
+            margin-bottom: 24px;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 20px;
+        }
+        .logo-text {
+            font-weight: 700;
+            font-size: 22px;
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 8px;
+        }
+        .header h1 span { color: var(--primary); }
+        .header p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Download Card */
+        .download-card {
+            background: linear-gradient(135deg, #059669, #10B981);
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            text-align: center;
+            margin-bottom: 28px;
+            color: white;
+        }
+        .download-card h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .download-card p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            color: var(--primary-dark);
+            padding: 14px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        .install-hint {
+            margin-top: 14px;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .form-card h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .form-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        /* Star Rating */
+        .rating-group {
+            margin-bottom: 24px;
+        }
+        .rating-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .stars {
+            display: flex;
+            gap: 8px;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+        .stars input {
+            display: none;
+        }
+        .stars label {
+            cursor: pointer;
+            font-size: 36px;
+            color: var(--star-empty);
+            transition: color 0.15s, transform 0.15s;
+            line-height: 1;
+        }
+        .stars label:hover,
+        .stars label:hover ~ label,
+        .stars input:checked ~ label {
+            color: var(--star);
+        }
+        .stars label:hover {
+            transform: scale(1.15);
+        }
+        .rating-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            min-height: 18px;
+        }
+
+        /* Form Fields */
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text);
+        }
+        .form-group label .required {
+            color: #EF4444;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #E5E7EB;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: inherit;
+            background: var(--bg);
+            color: var(--text);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: #9CA3AF;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            width: 100%;
+            padding: 14px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .submit-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+        }
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Thank You */
+        .thank-you {
+            display: none;
+            text-align: center;
+            padding: 48px 24px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid #E5E7EB;
+        }
+        .thank-you.show {
+            display: block;
+        }
+        .thank-you .check {
+            width: 72px;
+            height: 72px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 36px;
+        }
+        .thank-you h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--primary-dark);
+        }
+        .thank-you p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            margin-bottom: 24px;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 28px 0 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .footer a:hover { text-decoration: underline; }
+
+        /* Checkbox group */
+        .checkbox-group {
+            margin-bottom: 18px;
+        }
+        .checkbox-group .group-label {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+        }
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+        .checkbox-item label {
+            font-size: 14px;
+            color: var(--text);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">R</div>
+                <span class="logo-text">RupeeLog</span>
+            </a>
+            <h1>Try RupeeLog &<br><span>Share Feedback</span></h1>
+            <p>Help us build India's best UPI expense tracker. Download, try it out, and tell us what you think.</p>
+        </div>
+
+        <!-- Download Card -->
+        <div class="download-card">
+            <h2>Step 1: Download the App</h2>
+            <p>Free, private, no sign-up required</p>
+            <a href="RupeeLog.apk" class="download-btn" download="RupeeLog.apk">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download APK
+            </a>
+            <p class="install-hint">Android 8.0+ &middot; If Play Protect warns, tap "More details" &rarr; "Install anyway"</p>
+        </div>
+
+        <!-- Feedback Form -->
+        <div class="form-card" id="formCard">
+            <h2>Step 2: Share Feedback</h2>
+            <p class="form-subtitle">Your feedback directly shapes what we build next.</p>
+
+            <form action="https://formsubmit.co/indraprakashgottipati61@gmail.com" method="POST" id="feedbackForm">
+                <!-- FormSubmit config -->
+                <input type="hidden" name="_subject" value="RupeeLog Feedback">
+                <input type="hidden" name="_captcha" value="false">
+                <input type="hidden" name="_template" value="table">
+                <input type="text" name="_honey" style="display:none">
+                <input type="hidden" name="_next" id="redirectUrl">
+
+                <!-- Star Rating -->
+                <div class="rating-group">
+                    <span class="rating-label">Overall Rating <span style="color:#EF4444">*</span></span>
+                    <div class="stars">
+                        <input type="radio" id="star5" name="rating" value="5" required>
+                        <label for="star5" title="Excellent">&#9733;</label>
+                        <input type="radio" id="star4" name="rating" value="4">
+                        <label for="star4" title="Very Good">&#9733;</label>
+                        <input type="radio" id="star3" name="rating" value="3">
+                        <label for="star3" title="Good">&#9733;</label>
+                        <input type="radio" id="star2" name="rating" value="2">
+                        <label for="star2" title="Fair">&#9733;</label>
+                        <input type="radio" id="star1" name="rating" value="1">
+                        <label for="star1" title="Poor">&#9733;</label>
+                    </div>
+                    <div class="rating-text" id="ratingText"></div>
+                </div>
+
+                <!-- Name -->
+                <div class="form-group">
+                    <label for="name">Full Name <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" placeholder="Your name" required>
+                </div>
+
+                <!-- Phone -->
+                <div class="form-group">
+                    <label for="phone">Phone Number <span class="required">*</span></label>
+                    <input type="tel" id="phone" name="phone" placeholder="98XXXXXXXX" pattern="[0-9]{10}" title="Enter 10-digit mobile number" required>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="email">Email <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" placeholder="you@example.com" required>
+                </div>
+
+                <!-- UPI Apps Used -->
+                <div class="checkbox-group">
+                    <span class="group-label">Which UPI apps do you use?</span>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="phonepe" name="upi_apps" value="PhonePe">
+                        <label for="phonepe">PhonePe</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="gpay" name="upi_apps" value="Google Pay">
+                        <label for="gpay">Google Pay</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="paytm" name="upi_apps" value="Paytm">
+                        <label for="paytm">Paytm</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="amazonpay" name="upi_apps" value="Amazon Pay">
+                        <label for="amazonpay">Amazon Pay</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="other_upi" name="upi_apps" value="Other">
+                        <label for="other_upi">Other</label>
+                    </div>
+                </div>
+
+                <!-- What did you like -->
+                <div class="form-group">
+                    <label for="liked">What did you like about the app?</label>
+                    <textarea id="liked" name="what_liked" placeholder="Auto-tracking, categories, reports, design..."></textarea>
+                </div>
+
+                <!-- What to improve -->
+                <div class="form-group">
+                    <label for="improve">What should we improve? <span class="required">*</span></label>
+                    <textarea id="improve" name="what_to_improve" placeholder="Bugs, missing features, confusing UI..." required></textarea>
+                </div>
+
+                <!-- Would you recommend -->
+                <div class="form-group">
+                    <label for="recommend">Would you recommend RupeeLog to a friend?</label>
+                    <select id="recommend" name="would_recommend">
+                        <option value="">Select...</option>
+                        <option value="Definitely yes">Definitely yes</option>
+                        <option value="Probably yes">Probably yes</option>
+                        <option value="Not sure">Not sure</option>
+                        <option value="Probably not">Probably not</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+                    Submit Feedback
+                </button>
+            </form>
+        </div>
+
+        <!-- Thank You (shown via URL param) -->
+        <div class="thank-you" id="thankYou">
+            <div class="check">&#10003;</div>
+            <h2>Thank You!</h2>
+            <p>Your feedback means a lot to us. We'll use it to make RupeeLog better for everyone.</p>
+            <a href="index.html" class="back-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                Back to RupeeLog
+            </a>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Made with care in India &middot; <a href="index.html">RupeeLog</a> &middot; <a href="privacy.html">Privacy</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Set redirect URL for formsubmit.co
+        document.getElementById('redirectUrl').value = window.location.href.split('?')[0] + '?thanks=1';
+
+        // Show thank-you if redirected back after submission
+        if (window.location.search.includes('thanks=1')) {
+            document.getElementById('formCard').style.display = 'none';
+            document.getElementById('thankYou').classList.add('show');
+            document.querySelector('.download-card').style.display = 'none';
+        }
+
+        // Star rating labels
+        const ratingLabels = {
+            '1': 'Poor - Needs a lot of work',
+            '2': 'Fair - Has potential',
+            '3': 'Good - Decent app',
+            '4': 'Very Good - Almost perfect',
+            '5': 'Excellent - Love it!'
+        };
+
+        document.querySelectorAll('.stars input').forEach(function(input) {
+            input.addEventListener('change', function() {
+                document.getElementById('ratingText').textContent = ratingLabels[this.value] || '';
+            });
+        });
+
+        // Phone number validation - digits only
+        document.getElementById('phone').addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+        });
+    </script>
+</body>
+</html>

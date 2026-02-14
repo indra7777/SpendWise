@@ -240,6 +240,24 @@ fun RupeeLogNavigation(
                     },
                     onReviewClick = {
                         navController.navigate(Screen.Review.route)
+                    },
+                    onNavigateToTransactions = {
+                        navController.navigate(Screen.Transactions.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    },
+                    onNavigateToSettings = {
+                        navController.navigate(Screen.Settings.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 )
             }

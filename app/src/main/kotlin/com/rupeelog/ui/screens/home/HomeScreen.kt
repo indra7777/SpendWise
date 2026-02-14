@@ -36,7 +36,9 @@ import java.util.*
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onAddTransaction: () -> Unit = {},
-    onReviewClick: () -> Unit = {}
+    onReviewClick: () -> Unit = {},
+    onNavigateToTransactions: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val currentHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
@@ -89,7 +91,7 @@ fun HomeScreen(
                         )
                     }
                     IconButton(
-                        onClick = { /* Profile or notifications */ }
+                        onClick = onNavigateToSettings
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.AccountBalanceWallet,
@@ -194,7 +196,7 @@ fun HomeScreen(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
-                    TextButton(onClick = { /* Navigate to transactions */ }) {
+                    TextButton(onClick = onNavigateToTransactions) {
                         Text("View All")
                     }
                 }
